@@ -36,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
             RegistroRequest request
     ) throws Exception {
 
-        if (request.rol() == RolUsuario.ADMINISTRADOR) {
+        if (request.rol() == RolUsuario.ADMINISTRADOR || request.rol() == RolUsuario.ADMIN) {
             throw new ReglaNegocioException(
                     "No se permite registrar administradores públicamente"
             );

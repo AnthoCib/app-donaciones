@@ -23,13 +23,13 @@ public class ReporteController {
 		return ResponseEntity.status(201).body(ApiResponse.ok("Reporte registrado", s.registrar(r)));
 	}
 
-	@PreAuthorize("hasRole('ADMINISTRADOR')")
+	@PreAuthorize("hasAnyRole('ADMIN','ADMINISTRADOR')")
 	@GetMapping("/admin/reportes")
 	public ResponseEntity<ApiResponse<List<ReporteResponse>>> listar() {
 		return ResponseEntity.ok(ApiResponse.ok("Reportes", s.listar()));
 	}
 
-	@PreAuthorize("hasRole('ADMINISTRADOR')")
+	@PreAuthorize("hasAnyRole('ADMIN','ADMINISTRADOR')")
 	@PatchMapping("/admin/reportes/{id}")
 	public ResponseEntity<ApiResponse<ReporteResponse>> atender(@PathVariable Long id,
 			@RequestParam EstadoReporte estado, @RequestParam String respuesta) {

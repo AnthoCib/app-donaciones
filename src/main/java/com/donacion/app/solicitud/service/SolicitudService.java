@@ -15,4 +15,6 @@ public interface SolicitudService {
 	SolicitudResponse rechazar(Long id, String observacion);
 
 	SolicitudResponse cancelar(Long id);
+
+	SolicitudResponse confirmarEntrega(Long id);
 }

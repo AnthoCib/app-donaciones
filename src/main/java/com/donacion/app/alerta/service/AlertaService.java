@@ -14,6 +14,7 @@ import com.donacion.app.alerta.repository.AlertaRepository;
 import com.donacion.app.publicacion.domain.EstadoPublicacion;
 import com.donacion.app.publicacion.domain.Publicacion;
 import com.donacion.app.publicacion.repository.PublicacionRepository;
+import com.donacion.app.usuario.domain.Usuario;
 import com.donacion.app.usuario.service.UsuarioService;
 
 import lombok.RequiredArgsConstructor;
@@ -29,10 +30,10 @@ public class AlertaService {
 	@Scheduled(cron = "0 0 * * * *")
 	public void revisar() {
 		LocalDateTime now = LocalDateTime.now();
-		for (Publicacion p : pubs.findAllByEstadoAndFechaVencimientoBetween(EstadoPublicacion.PUBLICADA, now,
+		for (Publicacion p : pubs.findAllByEstadoAndFechaVencimientoBetween(EstadoPublicacion.DISPONIBLE, now,
 				now.plusHours(24)))
 			crear(p, TipoAlerta.PROXIMO_VENCIMIENTO, "El alimento está próximo a vencer");
-		for (Publicacion p : pubs.findAllByEstadoAndFechaVencimientoBetween(EstadoPublicacion.PUBLICADA,
+		for (Publicacion p : pubs.findAllByEstadoAndFechaVencimientoBetween(EstadoPublicacion.DISPONIBLE,
 				now.minusYears(10), now)) {
 			p.setEstado(EstadoPublicacion.VENCIDA);
 			pubs.save(p);
@@ -40,9 +41,13 @@ public class AlertaService {
 		}
 	}
 
+	public void crear(Publicacion p, Usuario usuario, TipoAlerta t, String m) {
+		if (!repo.existsByPublicacionIdPublicacionAndTipoAndUsuarioIdUsuario(p.getIdPublicacion(), t, usuario.getIdUsuario()))
+			repo.save(Alerta.builder().publicacion(p).usuario(usuario).tipo(t).mensaje(m).build());
+	}
+
 	private void crear(Publicacion p, TipoAlerta t, String m) {
-		if (!repo.existsByPublicacionIdPublicacionAndTipo(p.getIdPublicacion(), t))
-			repo.save(Alerta.builder().publicacion(p).usuario(p.getDonante()).tipo(t).mensaje(m).build());
+		crear(p, p.getDonante(), t, m);
 	}
 
 	public List<AlertaResponse> mias() {

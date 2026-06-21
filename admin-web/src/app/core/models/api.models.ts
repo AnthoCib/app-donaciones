@@ -1,0 +1,12 @@
+export interface ApiResponse<T>{success:boolean;mensaje:string;data:T}
+export interface LoginRequest{correo:string;password:string}
+export interface AuthResponse{idUsuario:number;nombres:string;apellidos:string;correo:string;rol:string;tipoEntidad?:string;token:string;tipoToken:string}
+export interface UsuarioResponse{idUsuario:number;nombres:string;apellidos:string;correo:string;telefono?:string;rol:string;tipoEntidad?:string;distrito?:string;direccion?:string;estado:string}
+export interface CategoriaResponse{idCategoria:number;nombre:string;estado:boolean}
+export interface CategoriaRequest{nombre:string}
+export interface PublicacionResponse{idPublicacion:number;codigo:string;donante:string;categoria:string;nombreAlimento:string;descripcion?:string;cantidadDisponible:number;unidadMedida:string;fechaVencimiento:string;imagenUrl?:string;distrito:string;direccion:string;estado:string;motivoObservacion?:string}
+export interface SolicitudResponse{idSolicitud:number;codigo:string;idPublicacion:number;alimento:string;idReceptor:number;receptor:string;motivo:string;cantidadSolicitada:number;personasBeneficiadas:number;estado:string;fechaSolicitud:string;fechaRespuesta?:string;observacionRespuesta?:string}
+export interface DashboardResumenResponse{cantidadAlimentosDonados:number;kilosEntregados:number;personasBeneficiadas:number;distritosImpactados:number;donantesActivos:number;reservasRealizadas:number}
+export interface ReporteResponse{idReporte:number;codigo:string;asunto:string;descripcion:string;estado:string;fechaReporte?:string}
+export interface HistorialOperacionResponse{idHistorial:number;tipo:string;idUsuarioActor?:number;idUsuarioRelacionado?:number;idPublicacion?:number;idSolicitud?:number;descripcion:string;fechaOperacion:string}
+export interface AlertaResponse{idAlerta:number;idPublicacion:number;tipo:string;mensaje:string;leida:boolean;fechaCreacion:string}

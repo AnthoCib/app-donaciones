@@ -7,6 +7,8 @@ import com.donacion.app.publicacion.repository.*;
 
 import com.donacion.app.usuario.domain.*;
 import com.donacion.app.usuario.service.UsuarioService;
+import com.donacion.app.historial.domain.TipoOperacion;
+import com.donacion.app.historial.service.HistorialOperacionService;
 import com.donacion.app.utils.RecursoNoEncontradoException;
 import com.donacion.app.utils.ReglaNegocioException;
 
@@ -23,6 +25,7 @@ public class PublicacionServiceImpl implements PublicacionService {
 	private final PublicacionRepository repo;
 	private final CategoriaRepository categorias;
 	private final UsuarioService actual;
+	private final HistorialOperacionService historial;
 
 	public PublicacionResponse registrar(PublicacionRequest r) {
 		Usuario u = actual.obtener();
@@ -32,11 +35,13 @@ public class PublicacionServiceImpl implements PublicacionService {
 				.orElseThrow(() -> new RecursoNoEncontradoException("Categoría no encontrada"));
 		Publicacion p = Publicacion.builder().codigo("PUB-" + System.currentTimeMillis()).donante(u).categoria(c)
 				.nombreAlimento(r.nombreAlimento()).descripcion(r.descripcion())
-				.cantidadDisponible(r.cantidadDisponible()).unidadMedida(r.unidadMedida()).pesoTotalKg(r.pesoTotalKg())
+				.cantidadDisponible(r.cantidadDisponible()).unidadMedida(r.unidadMedida())
 				.fechaVencimiento(r.fechaVencimiento()).imagenUrl(r.imagenUrl()).distrito(r.distrito())
 				.direccion(r.direccion()).latitud(r.latitud()).longitud(r.longitud())
 				.estado(EstadoPublicacion.PENDIENTE).build();
-		return map(repo.save(p));
+		Publicacion guardada = repo.save(p);
+		historial.registrar(TipoOperacion.PUBLICACION_CREADA, u, null, guardada, null, "Publicación de alimento creada");
+		return map(guardada);
 	}
 
 	public PublicacionResponse actualizar(Long id, PublicacionRequest r) {
@@ -44,7 +49,7 @@ public class PublicacionServiceImpl implements PublicacionService {
 		Usuario u = actual.obtener();
 		if (!p.getDonante().getIdUsuario().equals(u.getIdUsuario()))
 			throw new ReglaNegocioException("No puede editar esta publicación");
-		if (p.getEstado() == EstadoPublicacion.ENTREGADA)
+		if (p.getEstado() == EstadoPublicacion.ENTREGADA || p.getEstado() == EstadoPublicacion.ENTREGADO)
 			throw new ReglaNegocioException("Publicación entregada");
 		p.setCategoria(categorias.findById(r.idCategoria())
 				.orElseThrow(() -> new RecursoNoEncontradoException("Categoría no encontrada")));
@@ -52,7 +57,6 @@ public class PublicacionServiceImpl implements PublicacionService {
 		p.setDescripcion(r.descripcion());
 		p.setCantidadDisponible(r.cantidadDisponible());
 		p.setUnidadMedida(r.unidadMedida());
-		p.setPesoTotalKg(r.pesoTotalKg());
 		p.setFechaVencimiento(r.fechaVencimiento());
 		p.setImagenUrl(r.imagenUrl());
 		p.setDistrito(r.distrito());
@@ -60,7 +64,9 @@ public class PublicacionServiceImpl implements PublicacionService {
 		p.setLatitud(r.latitud());
 		p.setLongitud(r.longitud());
 		p.setEstado(EstadoPublicacion.PENDIENTE);
-		return map(repo.save(p));
+		Publicacion guardada = repo.save(p);
+		historial.registrar(TipoOperacion.PUBLICACION_ACTUALIZADA, u, null, guardada, null, "Publicación de alimento actualizada");
+		return map(guardada);
 	}
 
 	@Transactional(readOnly = true)
@@ -82,11 +88,11 @@ public class PublicacionServiceImpl implements PublicacionService {
 	@Transactional(readOnly = true)
 	public List<PublicacionResponse> disponibles(String d, Long c) {
 		List<Publicacion> l = d != null
-				? repo.findAllByEstadoAndDistritoIgnoreCaseOrderByFechaVencimientoAsc(EstadoPublicacion.PUBLICADA, d)
+				? repo.findAllByEstadoAndDistritoIgnoreCaseOrderByFechaVencimientoAsc(EstadoPublicacion.DISPONIBLE, d)
 				: c != null
 						? repo.findAllByEstadoAndCategoriaIdCategoriaOrderByFechaVencimientoAsc(
-								EstadoPublicacion.PUBLICADA, c)
-						: repo.findAllByEstadoOrderByFechaVencimientoAsc(EstadoPublicacion.PUBLICADA);
+								EstadoPublicacion.DISPONIBLE, c)
+						: repo.findAllByEstadoOrderByFechaVencimientoAsc(EstadoPublicacion.DISPONIBLE);
 		return l.stream().filter(p -> p.getFechaVencimiento().isAfter(LocalDateTime.now())).map(this::map).toList();
 	}
 
@@ -96,7 +102,7 @@ public class PublicacionServiceImpl implements PublicacionService {
 	}
 
 	public List<PublicacionResponse> cercanas(java.math.BigDecimal lat, java.math.BigDecimal lon, double radio) {
-		return repo.findAllByEstadoOrderByFechaVencimientoAsc(EstadoPublicacion.PUBLICADA).stream()
+		return repo.findAllByEstadoOrderByFechaVencimientoAsc(EstadoPublicacion.DISPONIBLE).stream()
 				.filter(p -> distancia(lat.doubleValue(), lon.doubleValue(), p.getLatitud().doubleValue(),
 						p.getLongitud().doubleValue()) <= radio)
 				.map(this::map).toList();
@@ -112,17 +118,34 @@ public class PublicacionServiceImpl implements PublicacionService {
 
 	public PublicacionResponse aprobar(Long id) {
 		Publicacion p = get(id);
-		p.setEstado(EstadoPublicacion.PUBLICADA);
+		p.setEstado(EstadoPublicacion.DISPONIBLE);
 		p.setFechaAprobacion(LocalDateTime.now());
 		p.setAdminAprobador(actual.obtener());
 		return map(repo.save(p));
+	}
+
+	public PublicacionResponse confirmarDisponibilidad(Long id) {
+		Publicacion p = get(id);
+		Usuario u = actual.obtener();
+		if (!p.getDonante().getIdUsuario().equals(u.getIdUsuario()))
+			throw new ReglaNegocioException("No puede confirmar esta publicación");
+		if (!p.getFechaVencimiento().isAfter(LocalDateTime.now()))
+			throw new ReglaNegocioException("No puede confirmar disponibilidad de alimentos vencidos");
+		if (p.getCantidadDisponible().compareTo(java.math.BigDecimal.ZERO) <= 0)
+			throw new ReglaNegocioException("La publicación no tiene stock disponible");
+		p.setEstado(EstadoPublicacion.DISPONIBLE);
+		Publicacion guardada = repo.save(p);
+		historial.registrar(TipoOperacion.PUBLICACION_DISPONIBLE, u, null, guardada, null, "Disponibilidad confirmada por donante");
+		return map(guardada);
 	}
 
 	public PublicacionResponse bloquear(Long id, String m) {
 		Publicacion p = get(id);
 		p.setEstado(EstadoPublicacion.BLOQUEADA);
 		p.setMotivoObservacion(m);
-		return map(repo.save(p));
+		Publicacion guardada = repo.save(p);
+		historial.registrar(TipoOperacion.PUBLICACION_BLOQUEADA, actual.obtener(), p.getDonante(), guardada, null, "Publicación bloqueada: " + m);
+		return map(guardada);
 	}
 
 	public PublicacionResponse rechazar(Long id, String m) {
@@ -140,7 +163,7 @@ public class PublicacionServiceImpl implements PublicacionService {
 		return new PublicacionResponse(p.getIdPublicacion(), p.getCodigo(), p.getDonante().getIdUsuario(),
 				p.getDonante().getNombres() + " " + p.getDonante().getApellidos(), p.getCategoria().getIdCategoria(),
 				p.getCategoria().getNombre(), p.getNombreAlimento(), p.getDescripcion(), p.getCantidadDisponible(),
-				p.getUnidadMedida(), p.getPesoTotalKg(), p.getFechaVencimiento(), p.getImagenUrl(), p.getDistrito(),
+				p.getUnidadMedida(), p.getFechaVencimiento(), p.getImagenUrl(), p.getDistrito(),
 				p.getDireccion(), p.getLatitud(), p.getLongitud(), p.getEstado(), p.getFechaPublicacion(),
 				p.getMotivoObservacion());
 	}

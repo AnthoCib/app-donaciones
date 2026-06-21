@@ -5,7 +5,7 @@ import java.math.*;
 import java.util.*;
 
 public interface EntregaService {
-	EntregaResponse confirmarDonante(Long solicitud, BigDecimal peso, String observacion);
+	EntregaResponse confirmarDonante(Long solicitud, BigDecimal cantidadEntregada, String observacion);
 
 	EntregaResponse confirmarReceptor(Long entrega);
 

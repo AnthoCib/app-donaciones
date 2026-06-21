@@ -1,0 +1,3 @@
+import { Component, Input } from '@angular/core';
+@Component({selector:'app-status-badge',standalone:true,template:`<span class="badge badge-estado" [class.text-bg-success]="ok.includes(value)" [class.text-bg-warning]="warn.includes(value)" [class.text-bg-danger]="bad.includes(value)" [class.text-bg-secondary]="!ok.includes(value)&&!warn.includes(value)&&!bad.includes(value)">{{value}}</span>`})
+export class StatusBadgeComponent{@Input() value='';ok=['ACTIVO','DISPONIBLE','ACEPTADA','ENTREGADA','RESUELTO'];warn=['PENDIENTE','RESERVADA','EN_REVISION'];bad=['BLOQUEADO','INACTIVO','RECHAZADA','CANCELADA','VENCIDA'];}
