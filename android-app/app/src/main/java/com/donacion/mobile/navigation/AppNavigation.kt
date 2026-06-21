@@ -8,7 +8,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.donacion.mobile.di.ContainerProvider
-import com.donacion.mobile.presentation.admin.*
 import com.donacion.mobile.presentation.auth.*
 import com.donacion.mobile.presentation.common.*
 import com.donacion.mobile.presentation.donante.*
@@ -22,7 +21,6 @@ fun AppNavigation() {
     val auth: AuthViewModel = viewModel(factory = factory)
     val donante: DonanteViewModel = viewModel(factory = factory)
     val receptor: ReceptorViewModel = viewModel(factory = factory)
-    val admin: AdminViewModel = viewModel(factory = factory)
     val session by auth.session.collectAsState()
     val nav = rememberNavController()
 
@@ -43,16 +41,13 @@ fun AppNavigation() {
         composable("detalle/{id}", arguments = listOf(navArgument("id") { type = NavType.LongType })) { DetalleAlimentoScreen(receptor, it.arguments!!.getLong("id")) }
         composable("misSolicitudes") { MisSolicitudesScreen(receptor) }
 
-        composable("admin") { AdminDashboardScreen(admin, { nav.navigate("usuariosAdmin") }, { nav.navigate("publicacionesAdmin") }) }
-        composable("administrador") { AdminDashboardScreen(admin, { nav.navigate("usuariosAdmin") }, { nav.navigate("publicacionesAdmin") }) }
-        composable("usuariosAdmin") { GestionUsuariosScreen(admin) }
-        composable("publicacionesAdmin") { GestionPublicacionesAdminScreen(admin) }
+        composable("adminMobileBlocked") { AdminMobileBlockedScreen { auth.logout(); nav.navigate("login") { popUpTo(0) } } }
     }
 }
 
 private fun String.startRoute(): String = when (uppercase()) {
     "DONANTE" -> "donante"
     "RECEPTOR" -> "receptor"
-    "ADMIN", "ADMINISTRADOR" -> "admin"
+    "ADMIN", "ADMINISTRADOR" -> "adminMobileBlocked"
     else -> "login"
 }

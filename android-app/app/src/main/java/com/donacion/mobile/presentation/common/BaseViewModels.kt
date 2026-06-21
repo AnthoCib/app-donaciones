@@ -48,21 +48,6 @@ class ReceptorViewModel(private val repo: DonationRepository) : ViewModel() {
     fun confirmarRecepcion(id: Long) = viewModelScope.launch { repo.confirmarEntrega(id); misSolicitudes() }
 }
 
-class AdminViewModel(private val repo: DonationRepository) : ViewModel() {
-    val dashboard = MutableStateFlow<UiState<DashboardResumenResponse>>(UiState.Idle)
-    val usuarios = MutableStateFlow<UiState<List<UsuarioResponse>>>(UiState.Idle)
-    val publicaciones = MutableStateFlow<UiState<List<PublicacionAlimentoResponse>>>(UiState.Idle)
-    val reportes = MutableStateFlow<UiState<List<ReporteResponse>>>(UiState.Idle)
-    fun cargar() { dashboard(); usuarios(); publicaciones(); reportes() }
-    fun dashboard() = viewModelScope.launch { run(dashboard) { repo.dashboardResumen() } }
-    fun usuarios() = viewModelScope.launch { run(usuarios) { repo.usuarios() } }
-    fun publicaciones() = viewModelScope.launch { run(publicaciones) { repo.adminPublicaciones() } }
-    fun reportes() = viewModelScope.launch { run(reportes) { repo.reportes() } }
-    fun bloquearUsuario(id: Long) = viewModelScope.launch { repo.bloquearUsuario(id); usuarios() }
-    fun aprobar(id: Long) = viewModelScope.launch { repo.aprobarPublicacion(id); publicaciones() }
-    fun bloquearPublicacion(id: Long) = viewModelScope.launch { repo.bloquearPublicacion(id, "Bloqueado desde app móvil"); publicaciones() }
-}
-
 private suspend fun <T> run(state: MutableStateFlow<UiState<T>>, block: suspend () -> NetworkResult<T>) {
     state.value = UiState.Loading
     state.value = when (val r = block()) { is NetworkResult.Success -> UiState.Success(r.data); is NetworkResult.Error -> UiState.Error(r.message) }
@@ -73,7 +58,6 @@ class VmFactory(private val repo: DonationRepository) : ViewModelProvider.Factor
         AuthViewModel::class.java -> AuthViewModel(repo)
         DonanteViewModel::class.java -> DonanteViewModel(repo)
         ReceptorViewModel::class.java -> ReceptorViewModel(repo)
-        AdminViewModel::class.java -> AdminViewModel(repo)
         else -> error("ViewModel no soportado")
     } as T
 }
