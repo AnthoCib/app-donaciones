@@ -23,12 +23,12 @@ public class Entrega {
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_solicitud", nullable = false, unique = true)
 	private Solicitud solicitud;
+	@Column(name = "fecha_programada")
+	private LocalDateTime fechaProgramada;
 	@Column(name = "fecha_entrega")
 	private LocalDateTime fechaEntrega;
 	@Column(name = "cantidad_entregada", precision = 10, scale = 2)
 	private BigDecimal cantidadEntregada;
-	@Column(name = "peso_entregado_kg", precision = 10, scale = 2)
-	private BigDecimal pesoEntregadoKg;
 	@Column(name = "personas_beneficiadas", nullable = false)
 	private Integer personasBeneficiadas;
 	@Column(name = "confirmada_donante", nullable = false)

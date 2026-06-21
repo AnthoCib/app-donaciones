@@ -29,7 +29,7 @@ public class EntregaServiceImpl implements EntregaService {
 	private final PublicacionRepository publicaciones;
 	private final UsuarioService actual;
 
-	public EntregaResponse confirmarDonante(Long id, BigDecimal peso, String o) {
+	public EntregaResponse confirmarDonante(Long id, BigDecimal cantidad, String o) {
 		Solicitud s = solicitudes.findById(id)
 				.orElseThrow(() -> new RecursoNoEncontradoException("Solicitud no encontrada"));
 		Usuario u = actual.obtener();
@@ -39,7 +39,7 @@ public class EntregaServiceImpl implements EntregaService {
 			throw new ReglaNegocioException("Solicitud no aceptada");
 		Entrega e = repo.findBySolicitudIdSolicitud(id)
 				.orElse(Entrega.builder().codigo("ENT-" + System.currentTimeMillis()).solicitud(s)
-						.cantidadEntregada(s.getCantidadSolicitada()).pesoEntregadoKg(peso)
+						.cantidadEntregada(cantidad != null ? cantidad : s.getCantidadSolicitada())
 						.personasBeneficiadas(s.getPersonasBeneficiadas()).build());
 		e.setConfirmadaDonante(true);
 		e.setEstado(EstadoEntrega.ENTREGADA_DONANTE);
@@ -76,7 +76,7 @@ public class EntregaServiceImpl implements EntregaService {
 
 	private EntregaResponse map(Entrega e) {
 		return new EntregaResponse(e.getIdEntrega(), e.getCodigo(), e.getSolicitud().getIdSolicitud(),
-				e.getSolicitud().getPublicacion().getNombreAlimento(), e.getCantidadEntregada(), e.getPesoEntregadoKg(),
+				e.getSolicitud().getPublicacion().getNombreAlimento(), e.getCantidadEntregada(),
 				e.getPersonasBeneficiadas(), e.getConfirmadaDonante(), e.getConfirmadaReceptor(), e.getEstado(),
 				e.getFechaEntrega(), e.getObservacion());
 	}

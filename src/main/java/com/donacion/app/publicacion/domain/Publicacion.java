@@ -36,8 +36,6 @@ public class Publicacion {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "unidad_medida", nullable = false, length = 20)
 	private UnidadMedida unidadMedida;
-	@Column(name = "peso_total_kg", precision = 10, scale = 2)
-	private BigDecimal pesoTotalKg;
 	@Column(name = "fecha_vencimiento", nullable = false)
 	private LocalDateTime fechaVencimiento;
 	@Column(name = "imagen_url", length = 500)

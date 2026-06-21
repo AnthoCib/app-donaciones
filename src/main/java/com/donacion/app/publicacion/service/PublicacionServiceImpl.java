@@ -32,7 +32,7 @@ public class PublicacionServiceImpl implements PublicacionService {
 				.orElseThrow(() -> new RecursoNoEncontradoException("Categoría no encontrada"));
 		Publicacion p = Publicacion.builder().codigo("PUB-" + System.currentTimeMillis()).donante(u).categoria(c)
 				.nombreAlimento(r.nombreAlimento()).descripcion(r.descripcion())
-				.cantidadDisponible(r.cantidadDisponible()).unidadMedida(r.unidadMedida()).pesoTotalKg(r.pesoTotalKg())
+				.cantidadDisponible(r.cantidadDisponible()).unidadMedida(r.unidadMedida())
 				.fechaVencimiento(r.fechaVencimiento()).imagenUrl(r.imagenUrl()).distrito(r.distrito())
 				.direccion(r.direccion()).latitud(r.latitud()).longitud(r.longitud())
 				.estado(EstadoPublicacion.PENDIENTE).build();
@@ -52,7 +52,6 @@ public class PublicacionServiceImpl implements PublicacionService {
 		p.setDescripcion(r.descripcion());
 		p.setCantidadDisponible(r.cantidadDisponible());
 		p.setUnidadMedida(r.unidadMedida());
-		p.setPesoTotalKg(r.pesoTotalKg());
 		p.setFechaVencimiento(r.fechaVencimiento());
 		p.setImagenUrl(r.imagenUrl());
 		p.setDistrito(r.distrito());
@@ -140,7 +139,7 @@ public class PublicacionServiceImpl implements PublicacionService {
 		return new PublicacionResponse(p.getIdPublicacion(), p.getCodigo(), p.getDonante().getIdUsuario(),
 				p.getDonante().getNombres() + " " + p.getDonante().getApellidos(), p.getCategoria().getIdCategoria(),
 				p.getCategoria().getNombre(), p.getNombreAlimento(), p.getDescripcion(), p.getCantidadDisponible(),
-				p.getUnidadMedida(), p.getPesoTotalKg(), p.getFechaVencimiento(), p.getImagenUrl(), p.getDistrito(),
+				p.getUnidadMedida(), p.getFechaVencimiento(), p.getImagenUrl(), p.getDistrito(),
 				p.getDireccion(), p.getLatitud(), p.getLongitud(), p.getEstado(), p.getFechaPublicacion(),
 				p.getMotivoObservacion());
 	}

@@ -29,14 +29,14 @@ public class DashboardService {
 
 	public DashboardResponse obtener() {
 		var confirmadas = ents.findAllByEstado(EstadoEntrega.CONFIRMADA);
-		BigDecimal kilos = confirmadas.stream()
-				.map(e -> e.getPesoEntregadoKg() == null ? BigDecimal.ZERO : e.getPesoEntregadoKg())
+		BigDecimal cantidadEntregada = confirmadas.stream()
+				.map(e -> e.getCantidadEntregada() == null ? BigDecimal.ZERO : e.getCantidadEntregada())
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 		int personas = confirmadas.stream()
 				.mapToInt(e -> e.getPersonasBeneficiadas() == null ? 0 : e.getPersonasBeneficiadas()).sum();
 		long distritos = confirmadas.stream().map(e -> e.getSolicitud().getPublicacion().getDistrito()).distinct()
 				.count();
-		return new DashboardResponse(pubs.count(), pubs.countByEstado(EstadoPublicacion.PUBLICADA), kilos, personas,
+		return new DashboardResponse(pubs.count(), pubs.countByEstado(EstadoPublicacion.PUBLICADA), cantidadEntregada, personas,
 				distritos, users.countByRolAndEstado(RolUsuario.DONANTE, EstadoUsuario.ACTIVO), sols.count(),
 				ents.countByEstado(EstadoEntrega.CONFIRMADA), reps.countByEstado(EstadoReporte.PENDIENTE));
 	}
