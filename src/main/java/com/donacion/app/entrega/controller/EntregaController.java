@@ -20,9 +20,9 @@ public class EntregaController {
 	@PreAuthorize("hasRole('DONANTE')")
 	@PostMapping("/donante/entregas/solicitud/{id}/confirmar")
 	public ResponseEntity<ApiResponse<EntregaResponse>> donante(@PathVariable Long id,
-			@RequestParam(required = false) BigDecimal pesoKg, @RequestParam(required = false) String observacion) {
+			@RequestParam(required = false) BigDecimal cantidadEntregada, @RequestParam(required = false) String observacion) {
 		return ResponseEntity
-				.ok(ApiResponse.ok("Entrega confirmada por donante", s.confirmarDonante(id, pesoKg, observacion)));
+				.ok(ApiResponse.ok("Entrega confirmada por donante", s.confirmarDonante(id, cantidadEntregada, observacion)));
 	}
 
 	@PreAuthorize("hasRole('RECEPTOR')")

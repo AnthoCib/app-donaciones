@@ -57,7 +57,7 @@ public class EntregaServiceImpl implements EntregaService {
 		e.setConfirmadaReceptor(true);
 		e.setEstado(EstadoEntrega.CONFIRMADA);
 		Solicitud s = e.getSolicitud();
-		s.setEstado(EstadoSolicitud.COMPLETADA);
+		s.setEstado(EstadoSolicitud.ENTREGADA);
 		solicitudes.save(s);
 		Publicacion p = s.getPublicacion();
 		p.setCantidadDisponible(BigDecimal.ZERO);

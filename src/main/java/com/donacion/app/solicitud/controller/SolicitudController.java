@@ -53,4 +53,10 @@ public class SolicitudController {
 			@RequestParam(required = false) String observacion) {
 		return ResponseEntity.ok(ApiResponse.ok("Solicitud rechazada", s.rechazar(id, observacion)));
 	}
+	@PreAuthorize("hasAnyRole('DONANTE','RECEPTOR')")
+	@PatchMapping("/solicitudes/{id}/confirmar-entrega")
+	public ResponseEntity<ApiResponse<SolicitudResponse>> confirmarEntrega(@PathVariable Long id) {
+		return ResponseEntity.ok(ApiResponse.ok("Entrega confirmada", s.confirmarEntrega(id)));
+	}
+
 }

@@ -54,26 +54,32 @@ public class PublicacionController {
 		return ResponseEntity.ok(ApiResponse.ok("Publicación actualizada", s.actualizar(id, r)));
 	}
 
-	@PreAuthorize("hasRole('ADMINISTRADOR')")
+	@PreAuthorize("hasRole('DONANTE')")
+	@PatchMapping("/donante/publicaciones/{id}/confirmar-disponibilidad")
+	public ResponseEntity<ApiResponse<PublicacionResponse>> confirmarDisponibilidad(@PathVariable Long id) {
+		return ResponseEntity.ok(ApiResponse.ok("Disponibilidad confirmada", s.confirmarDisponibilidad(id)));
+	}
+
+	@PreAuthorize("hasAnyRole('ADMIN','ADMINISTRADOR')")
 	@GetMapping("/admin/publicaciones")
 	public ResponseEntity<ApiResponse<List<PublicacionResponse>>> todas() {
 		return ResponseEntity.ok(ApiResponse.ok("Publicaciones", s.listar()));
 	}
 
-	@PreAuthorize("hasRole('ADMINISTRADOR')")
+	@PreAuthorize("hasAnyRole('ADMIN','ADMINISTRADOR')")
 	@PatchMapping("/admin/publicaciones/{id}/aprobar")
 	public ResponseEntity<ApiResponse<PublicacionResponse>> aprobar(@PathVariable Long id) {
 		return ResponseEntity.ok(ApiResponse.ok("Publicación aprobada", s.aprobar(id)));
 	}
 
-	@PreAuthorize("hasRole('ADMINISTRADOR')")
+	@PreAuthorize("hasAnyRole('ADMIN','ADMINISTRADOR')")
 	@PatchMapping("/admin/publicaciones/{id}/bloquear")
 	public ResponseEntity<ApiResponse<PublicacionResponse>> bloquear(@PathVariable Long id,
 			@RequestParam String motivo) {
 		return ResponseEntity.ok(ApiResponse.ok("Publicación bloqueada", s.bloquear(id, motivo)));
 	}
 
-	@PreAuthorize("hasRole('ADMINISTRADOR')")
+	@PreAuthorize("hasAnyRole('ADMIN','ADMINISTRADOR')")
 	@PatchMapping("/admin/publicaciones/{id}/rechazar")
 	public ResponseEntity<ApiResponse<PublicacionResponse>> rechazar(@PathVariable Long id,
 			@RequestParam String motivo) {

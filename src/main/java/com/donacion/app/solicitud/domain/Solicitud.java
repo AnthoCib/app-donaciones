@@ -40,6 +40,10 @@ public class Solicitud {
 	private LocalDateTime fechaSolicitud;
 	@Column(name = "fecha_respuesta")
 	private LocalDateTime fechaRespuesta;
+	@Column(name = "fecha_reserva")
+	private LocalDateTime fechaReserva;
+	@Column(name = "fecha_confirmacion_entrega")
+	private LocalDateTime fechaConfirmacionEntrega;
 	@Column(name = "observacion_respuesta", length = 300)
 	private String observacionRespuesta;
 

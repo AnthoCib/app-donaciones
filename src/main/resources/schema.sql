@@ -59,6 +59,8 @@ CREATE TABLE IF NOT EXISTS solicitud (
     personas_beneficiadas INT NOT NULL DEFAULT 1,
     estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE',
     fecha_solicitud DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_reserva DATETIME,
+    fecha_confirmacion_entrega DATETIME,
     fecha_respuesta DATETIME,
     observacion_respuesta VARCHAR(300),
     CONSTRAINT fk_solicitud_publicacion FOREIGN KEY (id_publicacion) REFERENCES publicacion(id_publicacion),
@@ -110,6 +112,22 @@ CREATE TABLE IF NOT EXISTS reporte (
     CONSTRAINT fk_reporte_admin FOREIGN KEY (id_admin) REFERENCES usuario(id_usuario)
 ) ENGINE=InnoDB;
 
+
+CREATE TABLE IF NOT EXISTS historial_operacion (
+    id_historial BIGINT PRIMARY KEY AUTO_INCREMENT,
+    tipo VARCHAR(40) NOT NULL,
+    id_usuario_actor BIGINT,
+    id_usuario_relacionado BIGINT,
+    id_publicacion BIGINT,
+    id_solicitud BIGINT,
+    descripcion VARCHAR(300) NOT NULL,
+    fecha_operacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_historial_actor FOREIGN KEY (id_usuario_actor) REFERENCES usuario(id_usuario),
+    CONSTRAINT fk_historial_relacionado FOREIGN KEY (id_usuario_relacionado) REFERENCES usuario(id_usuario),
+    CONSTRAINT fk_historial_publicacion FOREIGN KEY (id_publicacion) REFERENCES publicacion(id_publicacion),
+    CONSTRAINT fk_historial_solicitud FOREIGN KEY (id_solicitud) REFERENCES solicitud(id_solicitud)
+) ENGINE=InnoDB;
+
 CREATE OR REPLACE VIEW vw_publicaciones_disponibles AS
 SELECT p.id_publicacion, p.codigo, p.nombre_alimento, p.descripcion, p.cantidad_disponible,
        p.unidad_medida, p.fecha_vencimiento, p.imagen_url, p.distrito, p.direccion,
@@ -118,13 +136,13 @@ SELECT p.id_publicacion, p.codigo, p.nombre_alimento, p.descripcion, p.cantidad_
 FROM publicacion p
 JOIN categoria c ON c.id_categoria = p.id_categoria
 JOIN usuario u ON u.id_usuario = p.id_donante
-WHERE p.estado = 'PUBLICADA' AND p.cantidad_disponible > 0
+WHERE p.estado = 'DISPONIBLE' AND p.cantidad_disponible > 0
   AND p.fecha_vencimiento > CURRENT_TIMESTAMP AND u.estado = 'ACTIVO';
 
 CREATE OR REPLACE VIEW vw_dashboard AS
 SELECT
     (SELECT COUNT(*) FROM publicacion) AS total_publicaciones,
-    (SELECT COUNT(*) FROM publicacion WHERE estado = 'PUBLICADA') AS publicaciones_disponibles,
+    (SELECT COUNT(*) FROM publicacion WHERE estado = 'DISPONIBLE') AS publicaciones_disponibles,
     (SELECT COALESCE(SUM(cantidad_entregada), 0) FROM entrega WHERE estado = 'CONFIRMADA') AS cantidad_alimentos_entregados,
     (SELECT COALESCE(SUM(personas_beneficiadas), 0) FROM entrega WHERE estado = 'CONFIRMADA') AS personas_beneficiadas,
     (SELECT COUNT(DISTINCT p.distrito) FROM publicacion p JOIN solicitud s ON s.id_publicacion = p.id_publicacion JOIN entrega e ON e.id_solicitud = s.id_solicitud WHERE e.estado = 'CONFIRMADA') AS distritos_impactados,
@@ -136,3 +154,6 @@ SELECT
 ALTER TABLE publicacion DROP COLUMN IF EXISTS peso_total_kg;
 ALTER TABLE entrega DROP COLUMN IF EXISTS peso_entregado_kg;
 ALTER TABLE entrega ADD COLUMN IF NOT EXISTS fecha_programada DATETIME AFTER id_solicitud;
+ALTER TABLE solicitud ADD COLUMN IF NOT EXISTS fecha_reserva DATETIME AFTER fecha_solicitud;
+ALTER TABLE solicitud ADD COLUMN IF NOT EXISTS fecha_confirmacion_entrega DATETIME AFTER fecha_reserva;
+

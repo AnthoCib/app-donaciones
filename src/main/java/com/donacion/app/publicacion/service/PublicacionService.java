@@ -13,6 +13,8 @@ public interface PublicacionService extends CrudService<PublicacionRequest, Publ
 
 	PublicacionResponse aprobar(Long id);
 
+	PublicacionResponse confirmarDisponibilidad(Long id);
+
 	PublicacionResponse bloquear(Long id, String motivo);
 
 	PublicacionResponse rechazar(Long id, String motivo);

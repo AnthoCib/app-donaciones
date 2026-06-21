@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.donacion.app.categoria.domain.EstadoUsuario;
 import com.donacion.app.dashboard.dto.DashboardResponse;
+import com.donacion.app.dashboard.dto.DashboardResumenResponse;
 import com.donacion.app.entrega.domain.EstadoEntrega;
 import com.donacion.app.entrega.repository.EntregaRepository;
 import com.donacion.app.publicacion.domain.EstadoPublicacion;
@@ -36,8 +37,19 @@ public class DashboardService {
 				.mapToInt(e -> e.getPersonasBeneficiadas() == null ? 0 : e.getPersonasBeneficiadas()).sum();
 		long distritos = confirmadas.stream().map(e -> e.getSolicitud().getPublicacion().getDistrito()).distinct()
 				.count();
-		return new DashboardResponse(pubs.count(), pubs.countByEstado(EstadoPublicacion.PUBLICADA), cantidadEntregada, personas,
+		return new DashboardResponse(pubs.count(), pubs.countByEstado(EstadoPublicacion.DISPONIBLE), cantidadEntregada, personas,
 				distritos, users.countByRolAndEstado(RolUsuario.DONANTE, EstadoUsuario.ACTIVO), sols.count(),
 				ents.countByEstado(EstadoEntrega.CONFIRMADA), reps.countByEstado(EstadoReporte.PENDIENTE));
+	}
+	public DashboardResumenResponse resumen() {
+		var dashboard = obtener();
+		return new DashboardResumenResponse(
+			dashboard.entregasConfirmadas(),
+			dashboard.cantidadAlimentosEntregados(),
+			dashboard.personasBeneficiadas(),
+			dashboard.distritosImpactados(),
+			dashboard.donantesActivos(),
+			dashboard.reservasRealizadas()
+		);
 	}
 }
